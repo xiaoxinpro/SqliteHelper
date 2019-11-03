@@ -208,6 +208,22 @@ table('user').order('username').findAll()
 ret = testDb.table('user').order('id asc, username desc').findAll()
 ```
 
+同样对于多字段排序`order`方法也可以使用`list`或`dict`作为参数，上面的代码也可以写成下面这种方式：
+```
+# 使用list作为参数
+ret = testDb.table('user').order([
+    'id asc',
+    'username desc'
+]).findAll()
+
+# 使用dict作为参数
+ret = testDb.table('user').order([
+    'id': 'asc',
+    'username': 'desc'
+]).findAll()
+
+```
+
 
 ## 更新数据
 数据更新的方法使用`save`方法，示例代码如下：
