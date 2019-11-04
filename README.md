@@ -235,18 +235,20 @@ ret = testDb.table('user').order([
 testDb.table('user').findAll()
 ```
 
-`findAll`方法没有任何参数，返回结果是由若干个set变量组成的list，每个set变量是一个查询记录，如下所示：
+#### 返回值
+
+返回结果是由若干个dict变量组成的list，每个dict变量是一个查询记录，如下所示：
 
 ```
 [
-    (1, 'demo', 'xxgzs.org'), 
-    (2, 'admin', 'admin888'), 
-    (3, 'test', 'test123'), 
-    (4, 'test1', 'test_pw_1'), 
-    (5, 'test2', 'test_pw_2'), 
-    (6, 'test3', 'test_pw_3'), 
-    (7, 'test4', 'test_pw_4'), 
-    (8, 'test5', 'test_pw_5')
+    {'id': 1, 'username': 'demo', 'password': 'xxgzs.org'}, 
+    {'id': 2, 'username': 'admin', 'password': 'admin888'}, 
+    {'id': 3, 'username': 'test', 'password': 'test123'}, 
+    {'id': 4, 'username': 'test1', 'password': 'test_pw_1'}, 
+    {'id': 5, 'username': 'test2', 'password': 'test_pw_2'}, 
+    {'id': 6, 'username': 'test3', 'password': 'test_pw_3'}, 
+    {'id': 7, 'username': 'test4', 'password': 'test_pw_4'}, 
+    {'id': 8, 'username': 'test5', 'password': 'test_pw_5'}
 ]
 ```
 
@@ -261,12 +263,16 @@ testDb.table('user').findAll()
 testDb.table('user').where('id = 1').find()
 ```
 
+> 返回结果是由一个dict变量组成的list对象，dict变量是查询结果记录
+
 当我们要查询指定个数结果时，将查询个数传入`find`方法即可，若参数值为0则查询全部结果。
 
 ```
 # 返回10个结果
 testDb.table('user').where('id > 1').find(10)
 ```
+
+> 返回结果与`findAll`相同，这里不再过多赘述。
 
 当我们要按页查询时，`find`方法第一个参数传入每页数据量，第二个参数参入页码（页码从0开始）
 
@@ -275,7 +281,7 @@ testDb.table('user').where('id > 1').find(10)
 testDb.table('user').where('id > 1').find(10, page=1)
 ```
 
-返回结果与`findAll`相同，这里不再过多赘述。
+> 返回结果与`findAll`相同，这里不再过多赘述。
 
 > 对于大数据表，建议优先使用`find`方法，可以有效减小内存和性能开销。
 
