@@ -195,7 +195,7 @@ class Table(object):
     # 执行查询操作（结果返回个数 - 默认1个）
     def find(self, count = 1, page = 0):
         cursor = self.__query(self.__getFindSql(self.getTableName(), limit=count, page=page))
-        return cursor.fetchall()
+        return self.__cursor2dict(cursor.description, cursor.fetchall())
 
     # 执行查询操作(不建议使用) -> 返回全部结果
     def findAll(self):
@@ -308,5 +308,18 @@ class Table(object):
             self.getConnection().commit()
         self.__reset()
         return cursor
+
+    # 查询结果转字典结果
+    def __cursor2dict(self, column, row):
+        retList = []
+        columnList = []
+        for item in column:
+            columnList.append(item[0])
+        for value in row:
+            retDict = {}
+            for index in range(len(columnList)):
+                retDict[columnList[index]] = value[index]
+            retList.append(retDict)
+        return retList
 
     
