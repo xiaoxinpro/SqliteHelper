@@ -7,7 +7,7 @@ class Connect(object):
     # 构造函数
     def __init__(self, dbName = ':memory:'):
         self.dbName = dbName
-        self.tableObj = Table()
+        self.tableObj = {}
         self.conn = sqlite3.connect(dbName)
     # 获取数据库名称
     def getDBName(self):
@@ -17,9 +17,11 @@ class Connect(object):
         return self.conn
     # 获取表类
     def table(self, tabl):
-        self.tableObj.setConnection(self.getConn())
-        self.tableObj.setTable(tabl)
-        return self.tableObj
+        if tabl not in self.tableObj.keys():
+            self.tableObj[tabl] = Table()
+            self.tableObj[tabl].setConnection(self.getConn())
+            self.tableObj[tabl].setTable(tabl)
+        return self.tableObj[tabl]
     # 执行SQL语句
     def query(self, sql, commit=False):
         cursor = self.getConn().execute(sql)
