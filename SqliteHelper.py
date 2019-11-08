@@ -46,6 +46,7 @@ class Table(object):
     # 设置表名
     def setTable(self, tab):
         self.tab = tab
+        self.tableField = self.__getDefaultField()
     # 检查表名是否存在
     def tableExists(self):
         isExist = False
@@ -60,6 +61,7 @@ class Table(object):
     def create(self, fields, insert=None):
         if(not self.tableExists()):
             QUERY = "CREATE TABLE " + self.getTableName() + " ("
+            fields = self.__dataProcess(fields)
             if isinstance(fields, dict):
                 keys = list(fields.keys())
                 values = list(fields.values())
@@ -81,6 +83,7 @@ class Table(object):
             else:
                 return False
             self.__query(QUERY, commit=True)
+            self.tableField = self.__getDefaultField()
             if insert != None:
                 self.data(insert).add()
             return True
@@ -274,6 +277,34 @@ class Table(object):
     def __delattr(self, value):
         if hasattr(self, value):
             delattr(self, value)
+
+    # 获取默认表结构
+    def __getDefaultField(self):
+        fieldList = []
+        try:
+            cursor = self.__query(self.__getFindSql(self.getTableName(), 1, 0))
+            for item in cursor.description:
+                fieldList.append(item[0])
+        finally:
+            return fieldList
+
+    # 数据处理方法，接收到的数据需要传入该方法后输出标准格式的dict变量
+    def __dataProcess(self, dataObj):
+        retDict = {}
+        if isinstance(dataObj, str):
+            return self.__dataProcess(dataObj.strip().split(','))
+        elif isinstance(dataObj, [list, tuple]):
+            for index in range(len(dataObj)):
+                dataList = dataObj[index].strip().stlit(',', 1)
+                if len(dataList) == 2 :
+                    retDict[dataList[0].strip()] = dataList[1].strip()
+            if len(retDict) > 0:
+                return self.__dataProcess(retDict)
+        elif isinstance(dataObj, dict):
+            for key in dataObj.keys():
+                if self.tableField.index(key) >= 0:
+                    retDict[key] = dataObj[key]
+        return retDict
 
     # 获取查询SQL命令
     def __getFindSql(self, tableName, limit = 0, page = 0):
