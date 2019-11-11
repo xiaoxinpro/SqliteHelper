@@ -61,8 +61,8 @@ class Table(object):
     def create(self, fields, insert=None):
         if(not self.tableExists()):
             QUERY = "CREATE TABLE " + self.getTableName() + " ("
-            fields = self.__dataProcess(fields)
-            if isinstance(fields, dict):
+            fields = self.__dataProcess(fields, isCheckKey=False)
+            if isinstance(fields, dict) and len(fields) > 0:
                 keys = list(fields.keys())
                 values = list(fields.values())
                 for index in range(len(fields)):
@@ -71,15 +71,6 @@ class Table(object):
                         QUERY += " , "
                     else:
                         QUERY += ");"
-            elif isinstance(fields, list):
-                for index in range(len(fields)):
-                    QUERY += fields[index]
-                    if index < len(fields) - 1:
-                        QUERY += " , "
-                    else:
-                        QUERY += ");"
-            elif isinstance(fields, str):
-                QUERY += fields + ");"
             else:
                 return False
             self.__query(QUERY, commit=True)
@@ -97,6 +88,7 @@ class Table(object):
             for item in datas:
                 self.data(item)
         elif isinstance(datas, dict) and len(datas) > 0:
+            datas = self.__dataProcess(datas)
             keys = list(datas.keys())
             values = list(datas.values())
             sql_key = " ( "
@@ -138,6 +130,7 @@ class Table(object):
         if isinstance(params, str):
             self.sql_where = params
         elif isinstance(params, dict):
+            params = self.__dataProcess(params)
             self.sql_where = ' '
             keys = list(params.keys())
             values = list(params.values())
@@ -162,37 +155,40 @@ class Table(object):
 
     # 指定返回字段
     def field(self, *fields):
-        if isinstance(fields, str):
+        if isinstance(fields, str) and self.__fieldExists(fields):
             self.sql_field = fields
         elif isinstance(fields, (list, tuple)) and len(fields) > 0:
             self.sql_field = " "
             fields = list(fields)
-            for index in range(len(fields)) :
-                self.sql_field += fields[index]
-                if index < len(fields) - 1:
-                    self.sql_field += ' , '
+            for index in range(len(fields)):
+                if self.__fieldExists(fields[index]):
+                    self.sql_field += fields[index]
+                    if index < len(fields) - 1:
+                        self.sql_field += ' , '
         else:
             self.sql_field = " * "
         return self
     
     # 排序操作
     def order(self, orders):
-        if isinstance(orders, str):
+        if isinstance(orders, str) and self.__fieldExists(orders):
             self.sql_order = orders
         elif isinstance(orders, list) and len(orders) > 0:
             self.sql_order = " "
             for index in orders:
-                self.sql_order += orders[index]
-                if index < len(orders) - 1:
-                    self.sql_order += ' , '
+                if self.__fieldExists(orders[index]):
+                    self.sql_order += orders[index]
+                    if index < len(orders) - 1:
+                        self.sql_order += ' , '
         elif isinstance(orders, dict) and len(orders) > 0:
             self.sql_order = " "
             keys = list(orders.keys())
             values = list(orders.values())
             for index in range(len(orders)):
-                self.sql_order += keys[index] + ' ' + values[index] + ' '
-                if index < len(orders) -1:
-                    self.sql_order += ', '
+                if self.__fieldExists(keys[index]):
+                    self.sql_order += keys[index] + ' ' + values[index] + ' '
+                    if index < len(orders) -1:
+                        self.sql_order += ', '
         else:
             self.__delattr('sql_order')
         return self
@@ -208,37 +204,53 @@ class Table(object):
 
     # 统计查询 Count
     def count(self, field = '*'):
-        self.sql_field = " COUNT(" + field + ") "
-        cursor = self.__query(self.__getFindSql(self.getTableName()))
-        return cursor.fetchone()[0]
+        if self.__fieldExists(field):
+            self.sql_field = " COUNT(" + field + ") "
+            cursor = self.__query(self.__getFindSql(self.getTableName()))
+            return cursor.fetchone()[0]
+        else:
+            return 0
 
     # 统计查询 Max
     def max(self, field):
-        self.sql_field = " MAX(" + field + ") "
-        cursor = self.__query(self.__getFindSql(self.getTableName()))
-        return cursor.fetchone()[0]
+        if self.__fieldExists(field):
+            self.sql_field = " MAX(" + field + ") "
+            cursor = self.__query(self.__getFindSql(self.getTableName()))
+            return cursor.fetchone()[0]
+        else:
+            return 0
 
     # 统计查询 Min
     def min(self, field):
-        self.sql_field = " MIN(" + field + ") "
-        cursor = self.__query(self.__getFindSql(self.getTableName()))
-        return cursor.fetchone()[0]
+        if self.__fieldExists(field):
+            self.sql_field = " MIN(" + field + ") "
+            cursor = self.__query(self.__getFindSql(self.getTableName()))
+            return cursor.fetchone()[0]
+        else:
+            return 0
 
     # 统计查询 Avg
     def avg(self, field):
-        self.sql_field = " AVG(" + field + ") "
-        cursor = self.__query(self.__getFindSql(self.getTableName()))
-        return cursor.fetchone()[0]
+        if self.__fieldExists(field):
+            self.sql_field = " AVG(" + field + ") "
+            cursor = self.__query(self.__getFindSql(self.getTableName()))
+            return cursor.fetchone()[0]
+        else:
+            return 0
 
     # 统计查询 Sum
     def sum(self, field):
-        self.sql_field = " SUM(" + field + ") "
-        cursor = self.__query(self.__getFindSql(self.getTableName()))
-        return cursor.fetchone()[0]
+        if self.__fieldExists(field):
+            self.sql_field = " SUM(" + field + ") "
+            cursor = self.__query(self.__getFindSql(self.getTableName()))
+            return cursor.fetchone()[0]
+        else:
+            return 0
 
 
     # 执行更新数据操作（需要更新数据字典）
     def save(self, data):
+        data = self.__dataProcess(data)
         if isinstance(data, dict) and len(data) > 0:
             sql_updata = ' '
             keys = list(data.keys())
@@ -287,22 +299,34 @@ class Table(object):
                 fieldList.append(item[0])
         finally:
             return fieldList
+    
+    # 检测字段是否存在
+    def __fieldExists(self, key):
+        return key in self.tableField
 
     # 数据处理方法，接收到的数据需要传入该方法后输出标准格式的dict变量
-    def __dataProcess(self, dataObj):
+    def __dataProcess(self, dataObj, isCheckKey=True):
         retDict = {}
+        retList = []
         if isinstance(dataObj, str):
-            return self.__dataProcess(dataObj.strip().split(','))
-        elif isinstance(dataObj, [list, tuple]):
+            return self.__dataProcess(dataObj.strip().split(','), isCheckKey)
+        elif isinstance(dataObj, (list, tuple)) and len(dataObj) > 0:
             for index in range(len(dataObj)):
-                dataList = dataObj[index].strip().stlit(',', 1)
-                if len(dataList) == 2 :
-                    retDict[dataList[0].strip()] = dataList[1].strip()
+                if isinstance(dataObj[index], dict):
+                    retList.append(self.__dataProcess(dataObj[index], isCheckKey)) 
+                elif isinstance(dataObj[index], str):
+                    dataList = dataObj[index].strip().stlit(' ', 1)
+                    if len(dataList) == 2 :
+                        retDict[dataList[0].strip()] = dataList[1].strip()
+                    else:
+                        retDict[dataList[0].strip()] = ''
+            if len(retList) > 0:
+                return retList
             if len(retDict) > 0:
-                return self.__dataProcess(retDict)
-        elif isinstance(dataObj, dict):
+                return self.__dataProcess(retDict, isCheckKey)
+        elif isinstance(dataObj, dict) and len(dataObj) > 0:
             for key in dataObj.keys():
-                if self.tableField.index(key) >= 0:
+                if not isCheckKey or self.__fieldExists(key):
                     retDict[key] = dataObj[key]
         return retDict
 
