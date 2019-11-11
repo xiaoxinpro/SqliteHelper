@@ -40,6 +40,9 @@ testDb.table('user').data([
     {'username': 'test5', 'password': 'test_pw_5'},
 ]).add()
 
+# 插入不存在字段数据将自动过滤掉
+testDb.table('user').add({'username': 'xiaoxin', 'password': 'xxgzs.org', 'test': 'null...'})
+
 # 查找全部数据
 ret = testDb.table('user').findAll()
 print('查找全部数据:', ret)
@@ -49,7 +52,7 @@ ret = testDb.table('user').where("id >= 1 and username = 'demo' and password = '
 ret = testDb.table('user').where({
     'id' : ['>=', 1],
     'username': 'demo',
-    'password': 'xxgzs.org'
+    'password': 'xxgzs.org',
 }).find()
 ret = testDb.table('user').where({
     'id' : ['>=', 1],
@@ -61,6 +64,12 @@ ret = testDb.table('user').where({
     'username': 'demo',
     'password': 'xxgzs.org'
 }, ['and','and']).find()
+ret = testDb.table('user').where({
+    'id' : ['>=', 1],
+    'username': 'demo',
+    'password': 'xxgzs.org',
+    'test': 'null++'
+}).find()
 print('查找指定条件的数据:', ret)
 
 # 查询并排序数据
