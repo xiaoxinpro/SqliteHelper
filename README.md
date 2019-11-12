@@ -108,7 +108,7 @@ testDb.table('user').add({
 
 `add`方法的参数是一个`dict`格式的变量，key为字段名称，value是要添加的值（可以是int、float、str格式的变量）。
 
-> 需要注意的是，字段名必须已存在的，否则将报异常。
+> 需要注意的是，若字段名不存在，将过滤掉该元素，其他数据不受影响。
 
 ### 使用连贯操作方法data
 对于添加多条数据来说，使用`add`方法效率十分低下，建议使用`data`连贯操作方法来实现，示例代码如下：
@@ -154,7 +154,7 @@ ret = testDb.table('user').where({
 }).find()
 ```
 
-`where`方法的参数`dict`的key为查询的字段名（必须是表中已存在的字段，若不存在则直接报错），value分为两种情况：
+`where`方法的参数`dict`的key为查询的字段名（若字段名不存在数据表中，将过滤掉该元素），value分为两种情况：
 - value为str、int、float时则进行` = `匹配
 - value为list是则以list[0]作为表达式，list[1]作为查询条件进行匹配
 
@@ -196,7 +196,7 @@ testDb.table('user').field('username','password').where('id = 1').find()
 
 如上示例，输出结果中将只包含'username'和'password'字段。
 
-> 需要注意的是`field`参数必须是存在的字段名，否则将抛异常。
+> 若`field`参数中有不存在的字段名，将自动过滤掉，不会输出到最终的结果中。
 
 
 ### 排序连贯操作方法 order
