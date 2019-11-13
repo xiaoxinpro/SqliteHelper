@@ -97,6 +97,7 @@ print('查询结果分页返回3:', ret)
 
 # 查询结果返回指定列
 ret = testDb.table('user').field('username','password').where('id = 1').find()
+ret = testDb.table('user').field('username','password','test').where('id = 1').find()
 print('查询结果返回指定列:', ret)
 
 # 更新数据(忽略where将改变全部数据)
