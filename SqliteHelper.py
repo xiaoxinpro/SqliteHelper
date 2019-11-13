@@ -160,11 +160,18 @@ class Table(object):
         elif isinstance(fields, (list, tuple)) and len(fields) > 0:
             self.sql_field = " "
             fields = list(fields)
+            retList = []
             for index in range(len(fields)):
                 if self.__fieldExists(fields[index]):
+                    retList.append(fields[index])
+            fields = retList
+            if len(fields) > 0:
+                for index in range(len(fields)):
                     self.sql_field += fields[index]
                     if index < len(fields) - 1:
                         self.sql_field += ' , '
+            else:
+                self.sql_field = " * "
         else:
             self.sql_field = " * "
         return self
