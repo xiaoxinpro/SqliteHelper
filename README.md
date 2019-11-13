@@ -198,6 +198,7 @@ testDb.table('user').field('username','password').where('id = 1').find()
 
 > 若`field`参数中有不存在的字段名，将自动过滤掉，不会输出到最终的结果中。
 
+> 若`field`参数为空或者全部不存在，将获取全部字段结果。
 
 ### 排序连贯操作方法 order
 `order`方法用于查询结果排序，示例代码如下：
