@@ -98,7 +98,7 @@ class Table(object):
             for index in range(len(datas)):
                 sql_key += keys[index] + " "
                 if isinstance(values[index], str):
-                    sql_value += "'" + values[index] + "' "
+                    sql_value += '"' + values[index].replace('"', "'") + '" '
                 else:
                     sql_value += str(values[index]) + " "
                 if index < len(datas) - 1:
